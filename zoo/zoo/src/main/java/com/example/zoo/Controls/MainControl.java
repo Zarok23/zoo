@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 
 @RestController
@@ -174,6 +175,56 @@ public class MainControl {
 
         List<Animals> animals = animalService.findAll();
 
+        getAnimals(list, animals);
+
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/animalsFullView")
+    ResponseEntity<List<HashMap<String, Object>>> anFullView(@RequestParam(value = "view", required = true) String view){
+        List<HashMap<String, Object>> list = new ArrayList<>();
+
+        List<Animals> animals = animalService.findAllView(view.toLowerCase(Locale.ROOT));
+
+        getAnimals(list, animals);
+
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/animalsFullTypeProd")
+    ResponseEntity<List<HashMap<String, Object>>> anFullTypeProd(@RequestParam(value = "type", required = true) String type){
+        List<HashMap<String, Object>> list = new ArrayList<>();
+
+        List<Animals> animals = animalService.findAll();
+
+        getAnimals(list, animals, type);
+
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/animalsFullPredator")
+    ResponseEntity<List<HashMap<String, Object>>> anFullPred(@RequestParam(value = "pred", required = true) boolean pred){
+        List<HashMap<String, Object>> list = new ArrayList<>();
+
+        List<Animals> animals = animalService.findAllPred(pred);
+
+        getAnimals(list, animals);
+
+        return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/animalsFullName")
+    ResponseEntity<List<HashMap<String, Object>>> anFullName(@RequestParam(value = "name", required = true) String name){
+        List<HashMap<String, Object>> list = new ArrayList<>();
+
+        List<Animals> animals = animalService.findAllName(name);
+
+        getAnimals(list, animals);
+
+        return ResponseEntity.ok(list);
+    }
+
+    private void getAnimals(List<HashMap<String, Object>> list, List<Animals> animals){
         for(Animals a: animals){
             HashMap<String, Object> map = new HashMap<>();
             map.put("Наименование", a.getName());
@@ -190,8 +241,29 @@ public class MainControl {
 
             list.add(map);
         }
+    }
 
-        return ResponseEntity.ok(list);
+    private void getAnimals(List<HashMap<String, Object>> list, List<Animals> animals, String type){
+        for(Animals a: animals){
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("Наименование", a.getName());
+            map.put("Вид", a.getView());
+            boolean pr = true;
+            for(SOP s: sopService.findByIda(Math.toIntExact(a.getId()))) {
+                if(productsService.findById(s.getIdp()).getType().equals(type.toLowerCase(Locale.ROOT)))
+                    pr = false;
+
+                HashMap<String, Object> map2 = new HashMap<>();
+                map2.put("Имя продукта", productsService.findById(s.getIdp()).getName());
+                map2.put("Тип продукта", productsService.findById(s.getIdp()).getType());
+                map2.put("Потребляет", s.getNumber());
+                map2.put("Ед. измерения", productsService.findById(s.getIdp()).getUnit());
+                map.put("Продукт id: " + productsService.findById(s.getIdp()).getId(), map2);
+
+            }
+            if (!pr)
+               list.add(map);
+        }
     }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @PostMapping("/sop")

@@ -33,6 +33,18 @@ public class AnimalService {
         return animalsRepo.findAll();
     }
 
+    public List<Animals> findAllView(String view){
+        return animalsRepo.findAllView(view);
+    }
+
+    public List<Animals> findAllPred(boolean pred){
+        return animalsRepo.findAllPred(pred);
+    }
+
+    public List<Animals> findAllName(String name){
+        return animalsRepo.findAllName(name);
+    }
+
     public Animals findById(Long userId){
         return animalsRepo.findById(userId).orElse(null);
     }
